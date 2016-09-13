@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!--
+
+  Copyright (c) 2011, Stado Global Development Group
+  Copyright (c) 2016 Regents of the University of Minnesota
+ 
+  This file is part of the Minnesota Population Center's Terra Populus project.
+  For copyright and licensing information, see the NOTICE and LICENSE files
+  in this project's top-level directory, and also online at:
+  https://github.com/mnpopcenter/stado
+
+  Build file to allow ant (http://ant.apache.org/) to be used
+  to build the Stado parser.
+-->
+
+<project name="stado-parser" default="all" basedir=".">
+
+  <!-- set global properties for this build -->
+  <property name="libdir"  value="../../../../../../lib" />
+
+  <!-- default target -->
+  <target name="all">
+    <antcall target="buildparser" />
+  </target>
+
+  <target name="buildparser" depends="cleanparser">
+    <delete quiet="false" file="core/jtb.out.jj" />
+    <move file="syntaxtree/skip_to_matching_brace.java" tofile="syntaxtree/skip_to_matching_brace.notremove"/>
+    <delete><fileset dir="." includes="*.java" /></delete>
+    <delete><fileset dir="syntaxtree/" includes="*.java" /></delete>
+    <delete><fileset dir="visitor/" includes="*.java" /></delete>
+    <move file="syntaxtree/skip_to_matching_brace.notremove" tofile="syntaxtree/skip_to_matching_brace.java"/>
+
+    <java classname="EDU.purdue.jtb.JTB">
+         <arg line="-p org.postgresql.stado.parser.core -o jtb.out.jj sql_extendb.jj"/>
+         <classpath>
+           <pathelement location="${libdir}/jtb.jar"/>
+           <pathelement location="${rootlibdir}/jtb.jar"/>
+         </classpath>
+    </java>
+
+    <java classname="javacc">
+         <arg line="jtb.out.jj"/>
+         <classpath>
+           <pathelement location="${libdir}/javacc.jar"/>
+           <pathelement location="${rootlibdir}/javacc.jar"/>
+         </classpath>
+    </java>
+  </target>
+
+  <target name="cleanparser">
+    <delete><fileset dir="." includes="*.class" /></delete>
+    <delete><fileset dir="syntaxtree/" includes="*.class" /></delete>
+    <delete><fileset dir="visitor/" includes="*.class" /></delete>
+  </target>
+
+</project>
+
